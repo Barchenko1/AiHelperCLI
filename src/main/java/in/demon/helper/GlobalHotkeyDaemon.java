@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static in.demon.helper.Constant.PROMT_1;
+
 public class GlobalHotkeyDaemon implements NativeKeyListener {
 
     private static final Gson GSON = new Gson();
@@ -79,17 +81,9 @@ public class GlobalHotkeyDaemon implements NativeKeyListener {
                     System.err.println("No PNG files found in folder: " + FOLDER_PREFIX);
                     return;
                 }
-//                String base64 = encodeFileToBase64(latestPng);
                 long handle2 = System.currentTimeMillis();
                 String base64 = encodeImageToBase64Jpeg(resized, 0.5f);
-                String jsonPayload = buildJsonPayload(base64, "This is a screenshot wish task. " +
-                        "Please read the image carefully and do the following: " +
-                        "1. Understand the problem requirements (don't write it)" +
-                        "2. Extract the input/output format. (don't write it)" +
-                        "3. Write a clear and correct solution in Java. (write it)" +
-                        "4. Explain the time and space complexity. (write it)" +
-                        "5. Provide a brief explanation of the approach. (write it)" +
-                        "6. Try to be short but complex");
+                String jsonPayload = buildJsonPayload(base64, PROMT_1);
                 long timeStamp2 = System.currentTimeMillis();
                 System.out.println(timeStamp2 - handle2);
 
