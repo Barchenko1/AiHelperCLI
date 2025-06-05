@@ -1,4 +1,4 @@
-package in.demon.helper;
+package in.demon.helper.websocket;
 
 import org.glassfish.tyrus.client.ClientManager;
 
