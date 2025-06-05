@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-One Lovato    mainClass = 'in.demon.helper.Main'
+    mainClass = 'in.demon.helper.Main'
 }
 
 
