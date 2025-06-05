@@ -2,10 +2,10 @@ package in.demon.helper.openaiclient;
 
 public class OpenAITextClient implements IOpenAIClient{
 
-    private IOpenAIClient openAIClient;
+    private final String apiKey;
 
     public OpenAITextClient(String apiKey) {
-        this.openAIClient = new OpenAITextClient(apiKey);
+        this.apiKey = apiKey;
     }
 
     @Override
