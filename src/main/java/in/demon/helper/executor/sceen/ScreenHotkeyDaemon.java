@@ -1,4 +1,4 @@
-package in.demon.helper.screen;
+package in.demon.helper.executor.sceen;
 
 import in.demon.helper.openaiclient.IOpenAIClient;
 import in.demon.helper.openaiclient.OpenAIScreenClient;
@@ -11,10 +11,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
-import java.awt.Robot;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,7 +24,7 @@ import java.util.stream.Stream;
 import static in.demon.helper.util.Constant.PROMPT_1;
 import static in.demon.helper.util.Constant.WEBSOCKET_API_URL;
 
-public class ScreenHotkeyDaemon {
+public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyDaemon.class);
 
     private static final String FOLDER_PREFIX = "/Users/pbarchenko/Downloads/helper";
@@ -42,6 +39,7 @@ public class ScreenHotkeyDaemon {
         this.webSocketClient = new WebSocketClient(WEBSOCKET_API_URL);
     }
 
+    @Override
     public void execute() {
         callScreenHelper();
     }

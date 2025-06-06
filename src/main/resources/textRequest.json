@@ -7,6 +7,10 @@
         {
           "type": "text",
           "text": "%s"
+        },
+        {
+          "type": "text",
+          "text": "Imagine that you are on a Software Engineering interview. Focus on question in conversation. \nIt can be a Data Structures/Algorithms on Java, Software Design + Architecture, SDLC/Resume Depth questions.\nFind a question and answer with such style:\n1. Don't repeat the question.\n2. Answer short but consistently\n3. if it Data Structures/Algorithms question Code examples should be in Java"
         }
       ]
     }

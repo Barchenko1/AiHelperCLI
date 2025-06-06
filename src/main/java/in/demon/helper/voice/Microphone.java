@@ -43,7 +43,7 @@ public class Microphone implements AutoCloseable {
         byte[] buffer = new byte[16384];
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         long start = System.currentTimeMillis();
-        while (System.currentTimeMillis() - start < 10000) { // e.g., record up to 10s
+        while (System.currentTimeMillis() - start < 10000) {
             int count = microphone.read(buffer, 0, buffer.length);
             if (count > 0) {
                 out.write(buffer, 0, count);
@@ -59,7 +59,6 @@ public class Microphone implements AutoCloseable {
         ByteArrayOutputStream out = readChunk();
         microphone.stop();
         microphone.close();
-        // Save and transcribe
         writeToFile(format, out, fileName);
     }
 
