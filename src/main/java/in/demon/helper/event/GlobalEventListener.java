@@ -30,5 +30,10 @@ public class GlobalEventListener implements NativeKeyListener {
             System.out.println("🎤 Trigger voice capture");
             executor.submit(voiceHotkeyDaemon::execute);
         }
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F3) {
+            System.out.println("🛑 Cancel voice capture");
+            voiceHotkeyDaemon.requestStop();
+        }
     }
 }
