@@ -2,6 +2,8 @@ package in.demon.helper.executor.sceen;
 
 import in.demon.helper.openaiclient.IOpenAIClient;
 import in.demon.helper.openaiclient.OpenAIScreenClient;
+import in.demon.helper.template.ITemplateJsonService;
+import in.demon.helper.template.TemplateJsonService;
 import in.demon.helper.websocket.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-import static in.demon.helper.util.Constant.PROMPT_1;
 import static in.demon.helper.util.Constant.WEBSOCKET_API_URL;
 
 public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
@@ -30,13 +30,17 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     private static final String FOLDER_PREFIX = "/Users/pbarchenko/Downloads/helper";
     private static final String PICTURE_REQ = "/pictureRequest.json";
 
+    private final String subPrompt;
     private final IOpenAIClient openAIClient;
     private final WebSocketClient webSocketClient;
+    private final ITemplateJsonService templateJsonService;
     private static long lastTriggerTime = 0;
 
-    public ScreenHotkeyDaemon(String apiKey) {
+    public ScreenHotkeyDaemon(String apiKey, String subPrompt) {
+        this.subPrompt = subPrompt;
         this.openAIClient = new OpenAIScreenClient(apiKey);
         this.webSocketClient = new WebSocketClient(WEBSOCKET_API_URL);
+        this.templateJsonService = new TemplateJsonService();
     }
 
     @Override
@@ -64,7 +68,7 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
             }
             long handle2 = System.currentTimeMillis();
             String base64 = encodeImageToBase64Jpeg(resized, 0.5f);
-            String jsonPayload = buildJsonPayload(base64, PROMPT_1);
+            String jsonPayload = templateJsonService.buildJsonPayload(PICTURE_REQ, base64, subPrompt);
             long timeStamp2 = System.currentTimeMillis();
             System.out.println(timeStamp2 - handle2);
 
@@ -78,19 +82,6 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
             System.out.println(timeStamp4 - handle4);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
-        }
-    }
-
-    private String buildJsonPayload(String base64Image, String userPrompt) {
-        try (InputStream inputStream = this.getClass().getResourceAsStream(PICTURE_REQ)) {
-            if (inputStream == null) {
-                throw new RuntimeException("JSON template not found: " + PICTURE_REQ);
-            }
-
-            String template = new String(inputStream.readAllBytes());
-            return template.formatted(base64Image, userPrompt.replace("\"", "\\\""));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read JSON template", e);
         }
     }
 
