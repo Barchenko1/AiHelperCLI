@@ -1,5 +1,8 @@
 package in.demon.helper.voice;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -13,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class Microphone implements AutoCloseable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Microphone.class);
     private TargetDataLine microphone;
 
     private void createMicrophone(AudioFormat format) {
@@ -20,7 +25,7 @@ public class Microphone implements AutoCloseable {
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 
             if (!AudioSystem.isLineSupported(info)) {
-                System.err.println("🚫 Microphone not supported.");
+                LOGGER.error("🚫 Microphone not supported.");
                 return;
             }
 

@@ -2,6 +2,7 @@ package in.demon.helper.executor.sceen;
 
 import in.demon.helper.openaiclient.IOpenAIClient;
 import in.demon.helper.openaiclient.OpenAIScreenClient;
+import in.demon.helper.propertie.IPropertiesProvider;
 import in.demon.helper.template.ITemplateJsonService;
 import in.demon.helper.template.TemplateJsonService;
 import in.demon.helper.websocket.WebSocketClient;
@@ -13,7 +14,10 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.*;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,8 +25,6 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.stream.Stream;
-
-import static in.demon.helper.util.Constant.WEBSOCKET_API_URL;
 
 public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyDaemon.class);
@@ -34,12 +36,11 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     private final IOpenAIClient openAIClient;
     private final WebSocketClient webSocketClient;
     private final ITemplateJsonService templateJsonService;
-    private static long lastTriggerTime = 0;
 
-    public ScreenHotkeyDaemon(String apiKey, String subPrompt) {
-        this.subPrompt = subPrompt;
-        this.openAIClient = new OpenAIScreenClient(apiKey);
-        this.webSocketClient = new WebSocketClient(WEBSOCKET_API_URL);
+    public ScreenHotkeyDaemon(IPropertiesProvider propertiesProvider, String prompt) {
+        this.subPrompt = propertiesProvider.getPropertyMap().get(prompt);
+        this.openAIClient = new OpenAIScreenClient(propertiesProvider);
+        this.webSocketClient = WebSocketClient.getInstance(propertiesProvider);
         this.templateJsonService = new TemplateJsonService();
     }
 
@@ -49,37 +50,34 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     }
 
     private void callScreenHelper() {
-        lastTriggerTime = System.currentTimeMillis();
-
-        System.out.println("fn + F1 detected:");
-
+        LOGGER.info("fn + F1 detected");
         try {
             long handle1 = System.currentTimeMillis();
             BufferedImage screenshot = captureScreen();
             BufferedImage resized = resizeImage(screenshot, 0.8); // 50% smaller
             saveScreenshotToLocal(resized);
-            long timeStamp1 = System.currentTimeMillis();
-            System.out.println(timeStamp1 - handle1);
+            long timeDiff1 = System.currentTimeMillis() - handle1;
+            LOGGER.info("time gets {}", timeDiff1);
 
             File latestPng = getLatestPng(new File(FOLDER_PREFIX));
             if (latestPng == null) {
-                System.err.println("No PNG files found in folder: " + FOLDER_PREFIX);
+                LOGGER.error("No PNG files found in folder: " + FOLDER_PREFIX);
                 return;
             }
             long handle2 = System.currentTimeMillis();
             String base64 = encodeImageToBase64Jpeg(resized, 0.5f);
             String jsonPayload = templateJsonService.buildJsonPayload(PICTURE_REQ, base64, subPrompt);
-            long timeStamp2 = System.currentTimeMillis();
-            System.out.println(timeStamp2 - handle2);
+            long timeDiff2 = System.currentTimeMillis() - handle2;
+            LOGGER.info("time gets {}", timeDiff2);
 
             long handle3 = System.currentTimeMillis();
             String response = openAIClient.sendToOpenAI(jsonPayload);
-            long timeStamp3 = System.currentTimeMillis();
-            System.out.println(timeStamp3 - handle3);
+            long timeDiff3 = System.currentTimeMillis() - handle3;
+            LOGGER.info("time gets {}", timeDiff3);
             long handle4 = System.currentTimeMillis();
             webSocketClient.send(response);
-            long timeStamp4 = System.currentTimeMillis();
-            System.out.println(timeStamp4 - handle4);
+            long timeDiff4 = System.currentTimeMillis() - handle4;
+            LOGGER.info("time gets {}", timeDiff4);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -97,7 +95,7 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
     private static void saveScreenshotToLocal(BufferedImage image) throws IOException {
         String filename = FOLDER_PREFIX + "/screenshot-" + System.currentTimeMillis() + ".png";
         ImageIO.write(image, "png", new File(filename));
-        System.out.println("Saved local screenshot to: " + filename);
+        LOGGER.info("Saved local screenshot to: {}", filename);
     }
 
     private static BufferedImage resizeImage(BufferedImage originalImage, double scale) {

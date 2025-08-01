@@ -3,6 +3,7 @@ package in.demon.helper.openaiclient;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import in.demon.helper.propertie.IPropertiesProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,23 +12,21 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static in.demon.helper.util.Constant.COMPLETIONS_API_URL;
-
 public class OpenAIScreenClient implements IOpenAIClient {
     private static final Gson GSON = new Gson();
-    private final String apiKey;
+    private final IPropertiesProvider propertiesProvider;
 
-    public OpenAIScreenClient(String apiKey) {
-        this.apiKey = apiKey;
+    public OpenAIScreenClient(IPropertiesProvider propertiesProvider) {
+        this.propertiesProvider = propertiesProvider;
     }
 
     @Override
     public String sendToOpenAI(String json) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(COMPLETIONS_API_URL).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(propertiesProvider.getProperty("COMPLETIONS_API_URL")).openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
-            connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+            connection.setRequestProperty("Authorization", "Bearer " + propertiesProvider.getProperty("OPENAI_TOKEN"));
             connection.setRequestProperty("Content-Type", "application/json");
 
             try (OutputStream os = connection.getOutputStream()) {

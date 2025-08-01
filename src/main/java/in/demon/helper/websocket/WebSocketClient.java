@@ -1,6 +1,9 @@
 package in.demon.helper.websocket;
 
+import in.demon.helper.propertie.IPropertiesProvider;
 import org.glassfish.tyrus.client.ClientManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.websocket.CloseReason;
 import javax.websocket.Endpoint;
@@ -13,13 +16,23 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class WebSocketClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketClient.class);
+    private static WebSocketClient instance;
+
     private Session userSession;
     private final BlockingQueue<String> pendingMessages = new LinkedBlockingQueue<>();
-    private final String uri;
+    private final IPropertiesProvider propertiesProvider;
 
-    public WebSocketClient(String uri) {
-        this.uri = uri;
+    private WebSocketClient(IPropertiesProvider propertiesProvider) {
+        this.propertiesProvider = propertiesProvider;
         connect();
+    }
+
+    public static synchronized WebSocketClient getInstance(IPropertiesProvider propertiesProvider) {
+        if (instance == null) {
+            instance = new WebSocketClient(propertiesProvider);
+        }
+        return instance;
     }
 
     private void connect() {
@@ -30,31 +43,31 @@ public class WebSocketClient {
                     client.connectToServer(new Endpoint() {
                         @Override
                         public void onOpen(Session session, EndpointConfig config) {
-                            System.out.println("✅ WebSocket connected.");
+                            LOGGER.info("✅ WebSocket connected.");
                             userSession = session;
 
                             session.addMessageHandler(String.class, message -> {
-                                System.out.println("📩 Received from server: " + message);
+                                LOGGER.info("\uD83D\uDCE9 Received from server: {}", message);
                             });
                         }
 
                         @Override
                         public void onClose(Session session, CloseReason closeReason) {
-                            System.out.println("⚠️ WebSocket closed: " + closeReason);
+                            LOGGER.info("⚠️ WebSocket closed: {}", closeReason);
                             userSession = null;
                             connect(); // Reconnect on close
                         }
 
                         @Override
                         public void onError(Session session, Throwable thr) {
-                            System.err.println("💥 WebSocket error: " + thr.getMessage());
+                            LOGGER.error("\uD83D\uDCA5 WebSocket error: {}", thr.getMessage());
                             userSession = null;
                             connect();
                         }
-                    }, new URI(uri));
+                    }, new URI(propertiesProvider.getProperty("WEBSOCKET_API_URL")));
                     break;
                 } catch (Exception e) {
-                    System.err.println("❌ WebSocket connection failed: " + e.getMessage());
+                    LOGGER.error("❌ WebSocket connection failed: {}", e.getMessage());
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException ignored) {}
@@ -67,8 +80,8 @@ public class WebSocketClient {
         if (userSession != null && userSession.isOpen()) {
             userSession.getAsyncRemote().sendText(message);
         } else {
-            System.err.println("WebSocket not open. Buffering message.");
-            pendingMessages.offer(message);
+            LOGGER.warn("WebSocket not open. Buffering message.");
+            pendingMessages.add(message);
         }
     }
 
@@ -77,7 +90,7 @@ public class WebSocketClient {
             try {
                 userSession.close();
             } catch (IOException e) {
-                System.err.println("WebSocket close error: " + e.getMessage());
+                LOGGER.error("WebSocket close error: {}", e.getMessage());
             }
         }
     }

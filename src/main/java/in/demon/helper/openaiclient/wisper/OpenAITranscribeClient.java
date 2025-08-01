@@ -1,6 +1,9 @@
 package in.demon.helper.openaiclient.wisper;
 
 import com.google.gson.JsonParser;
+import in.demon.helper.propertie.IPropertiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,14 +15,15 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import static in.demon.helper.util.Constant.TRANSCRIPTION_API_URL;
+import java.nio.charset.StandardCharsets;
 
 public class OpenAITranscribeClient implements IOpenAITranscribeClient {
-    private final String apiKey;
 
-    public OpenAITranscribeClient(String apiKey) {
-        this.apiKey = apiKey;
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenAITranscribeClient.class);
+    private final IPropertiesProvider propertiesProvider;
+
+    public OpenAITranscribeClient(IPropertiesProvider propertiesProvider) {
+        this.propertiesProvider = propertiesProvider;
     }
 
     @Override
@@ -27,15 +31,15 @@ public class OpenAITranscribeClient implements IOpenAITranscribeClient {
         try {
             String boundary = "----OpenAIFormBoundary" + System.currentTimeMillis();
 
-            URL url = new URL(TRANSCRIPTION_API_URL);
+            URL url = new URL(propertiesProvider.getProperty("TRANSCRIPTION_API_URL"));
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+            conn.setRequestProperty("Authorization", "Bearer " + propertiesProvider.getProperty("OPENAI_API_KEY"));
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
             try (OutputStream out = conn.getOutputStream();
-                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(out, "UTF-8"), true)) {
+                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), true)) {
 
                 // file part
                 writer.append("--").append(boundary).append("\r\n");
@@ -75,12 +79,12 @@ public class OpenAITranscribeClient implements IOpenAITranscribeClient {
                             .getAsString();
                 }
             } else {
-                System.err.println("❌ OpenAI API failed: " + responseCode);
+                LOGGER.error("❌ OpenAI API failed: {}", responseCode);
                 return null;
             }
 
         } catch (IOException e) {
-            System.err.println("❌ Error sending to OpenAI: " + e.getMessage());
+            LOGGER.error("❌ Error sending to OpenAI: {}", e.getMessage());
             return null;
         }
     }

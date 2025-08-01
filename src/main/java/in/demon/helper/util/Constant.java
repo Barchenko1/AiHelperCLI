@@ -4,10 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class Constant {
-    public static final String COMPLETIONS_API_URL = "https://api.openai.com/v1/chat/completions";
-    public static final String TRANSCRIPTION_API_URL = "https://api.openai.com/v1/audio/transcriptions";
-    public static final String WEBSOCKET_API_URL = "ws://192.168.1.22:8080/ws";
-
     public static final String PROMPT_1 = "This is a screenshot wish task. " +
             "Please read the image carefully and do the following: " +
             "1. Understand the problem requirements (don't write it)" +
@@ -34,9 +30,12 @@ public final class Constant {
             "4. Try to be short but complex. " +
             "5. Try to create an example on Java.";
 
+    public static final String PROMPT_4 = "This is a text with task. Find task and resolve it.";
+
     public static final Map<String, String> SUB_PROMPT_MAP = new HashMap<>() {{
         put("algorithm", PROMPT_1);
         put("flex", PROMPT_2);
         put("voice", PROMPT_3);
+        put("copyHtml", PROMPT_4);
     }};
 }

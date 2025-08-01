@@ -1,20 +1,26 @@
 package in.demon.helper;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
-import com.google.gson.Gson;
 import in.demon.helper.event.GlobalEventListener;
+import in.demon.helper.propertie.IPropertiesProvider;
+import in.demon.helper.propertie.PropertiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
-    private static final String PARAM = "param";
-    private static final String OPENAI_API_KEY = System.getenv("OPENAI_API_KEY");
-    private static final Gson GSON = new Gson();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+    private static final IPropertiesProvider propertiesProvider = new PropertiesProvider();
+//    private static final String OPENAI_API_KEY = System.getenv("OPENAI_API_KEY");
 
     public static void main(String[] args) {
         try {
             GlobalScreen.registerNativeHook();
-            GlobalScreen.addNativeKeyListener(new GlobalEventListener(OPENAI_API_KEY));
-            System.out.println("Listening for global fn + F1 key...");
+            GlobalScreen.addNativeKeyListener(new GlobalEventListener());
+            LOGGER.info("Listening for global fn + F1 key...");
         } catch (Exception e) {
+            LOGGER.error("Failed to register global hook.", e);
             throw new RuntimeException(e);
         }
     }

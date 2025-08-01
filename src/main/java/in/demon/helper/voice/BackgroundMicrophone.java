@@ -1,6 +1,8 @@
 package in.demon.helper.voice;
 
 import in.demon.helper.openaiclient.wisper.CircularAudioBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -14,6 +16,9 @@ import java.io.File;
 import java.io.IOException;
 
 public class BackgroundMicrophone implements AutoCloseable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackgroundMicrophone.class);
+
     private TargetDataLine microphone;
     private CircularAudioBuffer circularBuffer;
     private Thread captureThread;
@@ -23,7 +28,7 @@ public class BackgroundMicrophone implements AutoCloseable {
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 
             if (!AudioSystem.isLineSupported(info)) {
-                System.err.println("🚫 Microphone not supported.");
+                LOGGER.error("🚫 Microphone not supported.");
                 return;
             }
 
