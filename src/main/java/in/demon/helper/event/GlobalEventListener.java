@@ -20,7 +20,6 @@ public class GlobalEventListener implements NativeKeyListener {
 
     private final ScreenHotkeyDaemon algorithmScreenHotkeyDaemon;
     private final ScreenHotkeyDaemon flexTaskScreenHotkeyDaemon;
-//    private final IClipboardKeyDaemon clipboardKeyDaemon;
     private final IClipboardExtensionKeyDaemon clipboardExtensionKeyDaemon;
     private final VoiceHotkeyDaemon voiceHotkeyDaemon;
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -29,7 +28,6 @@ public class GlobalEventListener implements NativeKeyListener {
         IPropertiesProvider propertiesProvider = new PropertiesProvider();
         this.algorithmScreenHotkeyDaemon = new ScreenHotkeyDaemon(propertiesProvider, "prompt.1");
         this.flexTaskScreenHotkeyDaemon = new ScreenHotkeyDaemon(propertiesProvider, "prompt.2");
-//        this.clipboardKeyDaemon = new ClipboardKeyDaemon(propertiesProvider);
         this.clipboardExtensionKeyDaemon = new ClipboardExtensionKeyDaemon(propertiesProvider);
         this.voiceHotkeyDaemon = new VoiceHotkeyDaemon(propertiesProvider);
         this.voiceHotkeyDaemon.startBackgroundCapture();

@@ -26,7 +26,7 @@ public class OpenAIScreenClient implements IOpenAIClient {
             HttpURLConnection connection = (HttpURLConnection) new URL(propertiesProvider.getProperty("COMPLETIONS_API_URL")).openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
-            connection.setRequestProperty("Authorization", "Bearer " + propertiesProvider.getProperty("OPENAI_TOKEN"));
+            connection.setRequestProperty("Authorization", "Bearer " + propertiesProvider.getProperty("OPENAI_API_KEY"));
             connection.setRequestProperty("Content-Type", "application/json");
 
             try (OutputStream os = connection.getOutputStream()) {

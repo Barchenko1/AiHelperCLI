@@ -5,6 +5,7 @@ import org.glassfish.tyrus.client.ClientManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.websocket.ClientEndpointConfig;
 import javax.websocket.CloseReason;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
@@ -40,6 +41,22 @@ public class WebSocketClient {
             while (userSession == null || !userSession.isOpen()) {
                 try {
                     ClientManager client = ClientManager.createClient();
+
+                    // Get JWT token
+                    String jwtToken = propertiesProvider.getProperty("WEBSOCKET_API_TOKEN");
+
+                    // Build config with Sec-WebSocket-Protocol header
+                    ClientEndpointConfig.Configurator configurator = new ClientEndpointConfig.Configurator() {
+                        @Override
+                        public void beforeRequest(java.util.Map<String, java.util.List<String>> headers) {
+                            headers.put("Sec-WebSocket-Protocol", java.util.Collections.singletonList(jwtToken));
+                        }
+                    };
+
+                    ClientEndpointConfig config = ClientEndpointConfig.Builder.create()
+                            .configurator(configurator)
+                            .build();
+
                     client.connectToServer(new Endpoint() {
                         @Override
                         public void onOpen(Session session, EndpointConfig config) {
@@ -64,8 +81,10 @@ public class WebSocketClient {
                             userSession = null;
                             connect();
                         }
-                    }, new URI(propertiesProvider.getProperty("WEBSOCKET_API_URL")));
+                    }, config, new URI(propertiesProvider.getProperty("WEBSOCKET_API_URL")));
+
                     break;
+
                 } catch (Exception e) {
                     LOGGER.error("❌ WebSocket connection failed: {}", e.getMessage());
                     try {
