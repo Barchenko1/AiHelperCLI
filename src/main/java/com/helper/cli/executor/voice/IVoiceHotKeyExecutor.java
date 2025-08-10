@@ -1,6 +1,6 @@
-package in.demon.helper.executor.voice;
+package com.helper.cli.executor.voice;
 
-public interface IVoiceHotKeyDaemon {
+public interface IVoiceHotKeyExecutor {
     void startBackgroundCapture();
     void captureAndProcess();
     void requestStop();

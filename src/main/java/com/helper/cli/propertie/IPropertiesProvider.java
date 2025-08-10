@@ -1,4 +1,4 @@
-package in.demon.helper.propertie;
+package com.helper.cli.propertie;
 
 import java.util.Map;
 

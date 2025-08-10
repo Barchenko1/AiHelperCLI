@@ -1,13 +1,11 @@
-package in.demon.helper.event;
+package com.helper.cli.event;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-import in.demon.helper.executor.extension.ClipboardExtensionKeyDaemon;
-import in.demon.helper.executor.extension.IClipboardExtensionKeyDaemon;
-import in.demon.helper.executor.sceen.ScreenHotkeyDaemon;
-import in.demon.helper.executor.voice.VoiceHotkeyDaemon;
-import in.demon.helper.propertie.IPropertiesProvider;
-import in.demon.helper.propertie.PropertiesProvider;
+import com.helper.cli.executor.sceen.ScreenHotkeyExecutor;
+import com.helper.cli.executor.voice.VoiceHotkeyExecutor;
+import com.helper.cli.propertie.IPropertiesProvider;
+import com.helper.cli.propertie.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,18 +16,16 @@ public class GlobalEventListener implements NativeKeyListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalEventListener.class);
 
-    private final ScreenHotkeyDaemon algorithmScreenHotkeyDaemon;
-    private final ScreenHotkeyDaemon flexTaskScreenHotkeyDaemon;
-    private final IClipboardExtensionKeyDaemon clipboardExtensionKeyDaemon;
-    private final VoiceHotkeyDaemon voiceHotkeyDaemon;
+    private final ScreenHotkeyExecutor algorithmScreenHotkeyDaemon;
+    private final ScreenHotkeyExecutor flexTaskScreenHotkeyDaemon;
+    private final VoiceHotkeyExecutor voiceHotkeyDaemon;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public GlobalEventListener() {
         IPropertiesProvider propertiesProvider = new PropertiesProvider();
-        this.algorithmScreenHotkeyDaemon = new ScreenHotkeyDaemon(propertiesProvider, "prompt.1");
-        this.flexTaskScreenHotkeyDaemon = new ScreenHotkeyDaemon(propertiesProvider, "prompt.2");
-        this.clipboardExtensionKeyDaemon = new ClipboardExtensionKeyDaemon(propertiesProvider);
-        this.voiceHotkeyDaemon = new VoiceHotkeyDaemon(propertiesProvider);
+        this.algorithmScreenHotkeyDaemon = new ScreenHotkeyExecutor(propertiesProvider, "prompt.1");
+        this.flexTaskScreenHotkeyDaemon = new ScreenHotkeyExecutor(propertiesProvider, "prompt.2");
+        this.voiceHotkeyDaemon = new VoiceHotkeyExecutor(propertiesProvider);
         this.voiceHotkeyDaemon.startBackgroundCapture();
     }
 
@@ -48,11 +44,6 @@ public class GlobalEventListener implements NativeKeyListener {
         if (e.getKeyCode() == NativeKeyEvent.VC_F3) {
             LOGGER.info("🎤 Trigger voice capture (last 30s)");
             executor.submit(voiceHotkeyDaemon::captureAndProcess);
-        }
-
-        if (e.getKeyCode() == NativeKeyEvent.VC_F4) {
-            LOGGER.info("Trigger clipboard capture");
-            executor.submit(clipboardExtensionKeyDaemon::execute);
         }
 
     }

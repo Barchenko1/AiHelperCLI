@@ -1,4 +1,4 @@
-package in.demon.helper.voice;
+package com.helper.cli.voice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

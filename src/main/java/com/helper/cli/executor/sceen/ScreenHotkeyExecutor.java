@@ -1,11 +1,8 @@
-package in.demon.helper.executor.sceen;
+package com.helper.cli.executor.sceen;
 
-import in.demon.helper.openaiclient.IOpenAIClient;
-import in.demon.helper.openaiclient.OpenAIScreenClient;
-import in.demon.helper.propertie.IPropertiesProvider;
-import in.demon.helper.template.ITemplateJsonService;
-import in.demon.helper.template.TemplateJsonService;
-import in.demon.helper.websocket.WebSocketClient;
+import com.helper.cli.propertie.IPropertiesProvider;
+import com.helper.cli.rest.IRestClient;
+import com.helper.cli.rest.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,26 +19,24 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
-public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyDaemon.class);
+public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyExecutor.class);
 
     private static final String FOLDER_PREFIX = "/Users/pbarchenko/Downloads/helper";
-    private static final String PICTURE_REQ = "/pictureRequest.json";
 
     private final String subPrompt;
-    private final IOpenAIClient openAIClient;
-    private final WebSocketClient webSocketClient;
-    private final ITemplateJsonService templateJsonService;
+    private final IRestClient restClient;
 
-    public ScreenHotkeyDaemon(IPropertiesProvider propertiesProvider, String prompt) {
+    public ScreenHotkeyExecutor(IPropertiesProvider propertiesProvider, String prompt) {
         this.subPrompt = propertiesProvider.getPropertyMap().get(prompt);
-        this.openAIClient = new OpenAIScreenClient(propertiesProvider);
-        this.webSocketClient = WebSocketClient.getInstance(propertiesProvider);
-        this.templateJsonService = new TemplateJsonService();
+        this.restClient = new RestClient();
     }
 
     @Override
@@ -64,22 +59,17 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
                 LOGGER.error("No PNG files found in folder: " + FOLDER_PREFIX);
                 return;
             }
-            long handle2 = System.currentTimeMillis();
-            String base64 = encodeImageToBase64Jpeg(resized, 0.5f);
-            String jsonPayload = templateJsonService.buildJsonPayload(PICTURE_REQ, base64, subPrompt);
-            long timeDiff2 = System.currentTimeMillis() - handle2;
-            LOGGER.info("time gets {}", timeDiff2);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Content-Type", "image/png");
 
-            long handle3 = System.currentTimeMillis();
-            String response = openAIClient.sendToOpenAI(jsonPayload);
-            long timeDiff3 = System.currentTimeMillis() - handle3;
-            LOGGER.info("time gets {}", timeDiff3);
-            long handle4 = System.currentTimeMillis();
-            webSocketClient.send(response);
-            long timeDiff4 = System.currentTimeMillis() - handle4;
-            LOGGER.info("time gets {}", timeDiff4);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            restClient.postMultipartPng(
+                    "http://localhost:8080/api/v1/screen",
+                    Files.readAllBytes(latestPng.toPath()),
+                    "",
+                    "",
+                    headers);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -126,7 +116,9 @@ public class ScreenHotkeyDaemon implements IScreenHotKeyDaemon {
 
     private static File getLatestPng(File folder) {
         File[] pngFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
-        if (pngFiles == null || pngFiles.length == 0) return null;
+        if (pngFiles == null || pngFiles.length == 0) {
+            return null;
+        }
 
         return Stream.of(pngFiles)
                 .filter(File::isFile)

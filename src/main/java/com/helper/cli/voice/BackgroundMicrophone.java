@@ -1,6 +1,6 @@
-package in.demon.helper.voice;
+package com.helper.cli.voice;
 
-import in.demon.helper.openaiclient.wisper.CircularAudioBuffer;
+import com.helper.cli.wisper.CircularAudioBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

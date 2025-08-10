@@ -1,4 +1,4 @@
-package in.demon.helper.propertie;
+package com.helper.cli.propertie;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

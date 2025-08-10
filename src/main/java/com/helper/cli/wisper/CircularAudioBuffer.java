@@ -1,4 +1,4 @@
-package in.demon.helper.openaiclient.wisper;
+package com.helper.cli.wisper;
 
 import java.io.ByteArrayOutputStream;
 

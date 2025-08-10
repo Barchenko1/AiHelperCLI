@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = 'in.demon.helper.Main'
+    mainClass = 'com.helper.cli.Main'
 }
 
 

@@ -1,7 +1,7 @@
-package in.demon.helper.openaiclient.wisper;
+package com.helper.cli.wisper;
 
 import com.google.gson.JsonParser;
-import in.demon.helper.propertie.IPropertiesProvider;
+import com.helper.cli.propertie.IPropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
