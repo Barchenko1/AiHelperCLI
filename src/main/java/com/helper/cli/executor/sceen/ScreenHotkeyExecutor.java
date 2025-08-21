@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Comparator;
@@ -30,21 +31,20 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyExecutor.class);
 
     private static final String FOLDER_PREFIX = "/Users/pbarchenko/Downloads/helper";
-
-    private final String subPrompt;
+    private final IPropertiesProvider propertiesProvider;
     private final IRestClient restClient;
 
-    public ScreenHotkeyExecutor(IPropertiesProvider propertiesProvider, String prompt) {
-        this.subPrompt = propertiesProvider.getPropertyMap().get(prompt);
+    public ScreenHotkeyExecutor(IPropertiesProvider propertiesProvider) {
+        this.propertiesProvider = propertiesProvider;
         this.restClient = new RestClient();
     }
 
     @Override
-    public void execute() {
-        callScreenHelper();
+    public void execute(String subPrompt) {
+        callScreenHelper(subPrompt);
     }
 
-    private void callScreenHelper() {
+    private void callScreenHelper(String subPrompt) {
         LOGGER.info("fn + F1 detected");
         try {
             long handle1 = System.currentTimeMillis();
@@ -62,12 +62,18 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", "image/png");
 
-            restClient.postMultipartPng(
-                    "http://localhost:8080/api/v1/screen",
+            HttpResponse<String> response = restClient.postMultipartPng(
+                    propertiesProvider.getProperty("aiHelperServerUrl") + "/api/v1/screen",
                     Files.readAllBytes(latestPng.toPath()),
-                    "",
-                    "",
+                    subPrompt,
                     headers);
+
+            int status = response.statusCode();
+            if (status == 200) {
+                LOGGER.info("Upload successful: " + status);
+            } else {
+                LOGGER.error("Upload failed {}: {}%n", status, response.body());
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

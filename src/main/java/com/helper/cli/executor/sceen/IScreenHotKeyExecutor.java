@@ -1,5 +1,5 @@
 package com.helper.cli.executor.sceen;
 
 public interface IScreenHotKeyExecutor {
-    void execute();
+    void execute(String subPrompt);
 }

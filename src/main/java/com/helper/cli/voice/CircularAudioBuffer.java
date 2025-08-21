@@ -1,4 +1,4 @@
-package com.helper.cli.wisper;
+package com.helper.cli.voice;
 
 import java.io.ByteArrayOutputStream;
 
