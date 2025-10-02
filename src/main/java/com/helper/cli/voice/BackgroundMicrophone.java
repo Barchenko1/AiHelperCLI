@@ -27,7 +27,7 @@ public class BackgroundMicrophone implements AutoCloseable {
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 
             if (!AudioSystem.isLineSupported(info)) {
-                LOGGER.error("🚫 Microphone not supported.");
+                LOGGER.error("🚫 Background Microphone not supported.");
                 return;
             }
 

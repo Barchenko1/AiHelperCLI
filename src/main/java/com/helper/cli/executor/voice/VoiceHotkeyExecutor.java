@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.helper.cli.util.Constant.LANGUAGE_TEXT;
+
 public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VoiceHotkeyExecutor.class);
@@ -41,23 +43,24 @@ public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
     }
 
     @Override
-    public void captureAndProcess(String subPrompt) {
+    public void captureAndProcess(String prompt, String programmingLanguage) {
         backgroundMicrophone.captureDuration(format, AUDIO_FILE);
         File file = new File(AUDIO_FILE);
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "audio/wav");
+        String finalPrompt = prompt + " " + LANGUAGE_TEXT.formatted(programmingLanguage);
         try {
             HttpResponse<String> response = restClient.postMultipartWav(
                     propertiesProvider.getProperty("aiHelperServerUrl") + "/api/v1/voice",
                     Files.readAllBytes(file.toPath()),
-                    subPrompt,
+                    finalPrompt,
                     headers);
 
             int status = response.statusCode();
             if (status == 200) {
-                LOGGER.info("Upload successful: " + status);
+                LOGGER.info("Upload successful: {}", status);
             } else {
-                LOGGER.error("Upload failed {}: {}%n", status, response.body());
+                LOGGER.error("Upload failed {}: {}", status, response.body());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 public class GlobalEventListener implements NativeKeyListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalEventListener.class);
-    private final PropertiesProvider propertiesProvider;
+    private final IPropertiesProvider propertiesProvider;
     private final ScreenHotkeyExecutor screenHotkeyExecutor;
     private final VoiceHotkeyExecutor voiceHotkeyExecutor;
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -33,21 +33,29 @@ public class GlobalEventListener implements NativeKeyListener {
             LOGGER.info("📸 Trigger screen capture");
             executor.submit(() ->
                     screenHotkeyExecutor.execute(
-                            propertiesProvider.getPropertyMap().get("prompt.1")));
+                            propertiesProvider.getPropertyMap().get("prompt.text"),
+                            propertiesProvider.getProperty("programmingLanguage")));
         }
 
         if (e.getKeyCode() == NativeKeyEvent.VC_F2) {
-            LOGGER.info("📸 Trigger screen capture");
-            executor.submit(() ->
-                    screenHotkeyExecutor.execute(
-                            propertiesProvider.getPropertyMap().get("prompt.2")));
-        }
-
-        if (e.getKeyCode() == NativeKeyEvent.VC_F3) {
             LOGGER.info("🎤 Trigger voice capture (last 30s)");
             executor.submit(() ->
                     voiceHotkeyExecutor.captureAndProcess(
-                            propertiesProvider.getPropertyMap().get("prompt.3")));
+                            propertiesProvider.getPropertyMap().get("prompt.voice"),
+                            propertiesProvider.getProperty("programmingLanguage")));
+        }
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F3) {
+            LOGGER.info("📸 Trigger screen capture");
+            executor.submit(screenHotkeyExecutor::commitScreenShots);
+        }
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F4) {
+            LOGGER.info("push screen folder");
+            executor.submit(() ->
+                    screenHotkeyExecutor.pushScreenShots(
+                            propertiesProvider.getPropertyMap().get("prompt.text"),
+                            propertiesProvider.getProperty("programmingLanguage")));
         }
 
     }
