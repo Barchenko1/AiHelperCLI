@@ -8,4 +8,4 @@ Local program for screen and voice making for AI helper
 
 # Run
 
-java -DWEBSOCKET_API_TOKEN="your-token" -jar build/libs/AiHelperCLI-1.0-SNAPSHOT.jar
+java -DCode="your-token" -jar build/libs/AiHelperCLI-1.0-SNAPSHOT.jar

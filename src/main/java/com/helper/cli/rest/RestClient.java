@@ -29,11 +29,14 @@ public class RestClient implements IRestClient {
         String json = GSON.toJson(payload);
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
                 .header("Content-Type", "application/json")
-                .header("X-Api-Secret", System.getenv("WEBSOCKET_API_TOKEN"))
                 .POST(HttpRequest.BodyPublishers.ofString(json));
 
         if (headers != null) {
             headers.forEach(b::header);
+        }
+        String code = System.getenv("VERIFICATION_CODE");
+        if (code != null && !code.isEmpty()) {
+            b.header("X-Auth-Code", code);
         }
         try {
             return CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
@@ -48,6 +51,7 @@ public class RestClient implements IRestClient {
                                                  Map<String, String> headers) {
         try {
             Objects.requireNonNull(pngBytes, "pngBytes");
+
 
             String boundary = "----JavaBoundary" + UUID.randomUUID();
             byte[] body = buildMultipartBody(boundary, "image.png", pngBytes, "image/png", prompt);
@@ -95,8 +99,12 @@ public class RestClient implements IRestClient {
                                                  byte[] body) throws IOException, InterruptedException {
         HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
-                .header("X-Api-Secret", System.getenv("WEBSOCKET_API_TOKEN"))
                 .POST(HttpRequest.BodyPublishers.ofByteArray(body));
+
+        String code = System.getenv("VERIFICATION_CODE");
+        if (code != null && !code.isEmpty()) {
+            b.header("X-Auth-Code", code);
+        }
 
         if (headers != null) headers.forEach(b::header);
 

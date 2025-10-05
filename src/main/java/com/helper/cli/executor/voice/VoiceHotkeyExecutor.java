@@ -48,6 +48,7 @@ public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
         File file = new File(AUDIO_FILE);
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "audio/wav");
+
         String finalPrompt = prompt + " " + LANGUAGE_TEXT.formatted(programmingLanguage);
         try {
             HttpResponse<String> response = restClient.postMultipartWav(
