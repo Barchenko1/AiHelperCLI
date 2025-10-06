@@ -35,6 +35,7 @@ public class RestClient implements IRestClient {
             headers.forEach(b::header);
         }
         String code = System.getenv("VERIFICATION_CODE");
+        LOGGER.debug(code);
         if (code != null && !code.isEmpty()) {
             b.header("X-Auth-Code", code);
         }
@@ -102,6 +103,7 @@ public class RestClient implements IRestClient {
                 .POST(HttpRequest.BodyPublishers.ofByteArray(body));
 
         String code = System.getenv("VERIFICATION_CODE");
+        LOGGER.debug(code);
         if (code != null && !code.isEmpty()) {
             b.header("X-Auth-Code", code);
         }

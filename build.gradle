@@ -25,7 +25,6 @@ jar {
 }
 
 group = 'com.helper.cli'
-version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()

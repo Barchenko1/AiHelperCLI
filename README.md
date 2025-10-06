@@ -8,4 +8,4 @@ Local program for screen and voice making for AI helper
 
 # Run
 
-java -DCode="your-token" -jar build/libs/AiHelperCLI-1.0-SNAPSHOT.jar
+VERIFICATION_CODE="your code" java -jar build/libs/AiHelperCLI.jar

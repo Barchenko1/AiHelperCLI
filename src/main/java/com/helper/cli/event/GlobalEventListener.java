@@ -1,5 +1,6 @@
 package com.helper.cli.event;
 
+import com.github.kwhat.jnativehook.NativeInputEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import com.helper.cli.executor.sceen.ScreenHotkeyExecutor;
@@ -29,13 +30,28 @@ public class GlobalEventListener implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent e) {
-        if (e.getKeyCode() == NativeKeyEvent.VC_F1) {
+//        if (e.getKeyCode() == NativeKeyEvent.VC_F1) {
+//            LOGGER.info("📸 Trigger screen capture");
+//            executor.submit(() ->
+//                    screenHotkeyExecutor.execute(
+//                            propertiesProvider.getPropertyMap().get("prompt.text"),
+//                            propertiesProvider.getProperty("programmingLanguage")));
+//        }
+        int mods = e.getModifiers();
+        if (e.getKeyCode() == NativeKeyEvent.VC_F1 &&
+                (mods & NativeInputEvent.ALT_MASK) != 0) {
             LOGGER.info("📸 Trigger screen capture");
             executor.submit(() ->
                     screenHotkeyExecutor.execute(
                             propertiesProvider.getPropertyMap().get("prompt.text"),
-                            propertiesProvider.getProperty("programmingLanguage")));
-        }
+                            propertiesProvider.getProperty("programmingLanguage")));}
+//        if (e.getKeyCode() == NativeKeyEvent.Alt) {
+//            LOGGER.info("📸 Trigger screen capture");
+//            executor.submit(() ->
+//                    screenHotkeyExecutor.execute(
+//                            propertiesProvider.getPropertyMap().get("prompt.text"),
+//                            propertiesProvider.getProperty("programmingLanguage")));
+//        }
 
         if (e.getKeyCode() == NativeKeyEvent.VC_F2) {
             LOGGER.info("🎤 Trigger voice capture (last 30s)");
