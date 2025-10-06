@@ -30,49 +30,52 @@ public class GlobalEventListener implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent e) {
-//        if (e.getKeyCode() == NativeKeyEvent.VC_F1) {
-//            LOGGER.info("📸 Trigger screen capture");
-//            executor.submit(() ->
-//                    screenHotkeyExecutor.execute(
-//                            propertiesProvider.getPropertyMap().get("prompt.text"),
-//                            propertiesProvider.getProperty("programmingLanguage")));
-//        }
-        int mods = e.getModifiers();
-        if (e.getKeyCode() == NativeKeyEvent.VC_F1 &&
-                (mods & NativeInputEvent.ALT_MASK) != 0) {
-            LOGGER.info("📸 Trigger screen capture");
-            executor.submit(() ->
-                    screenHotkeyExecutor.execute(
-                            propertiesProvider.getPropertyMap().get("prompt.text"),
-                            propertiesProvider.getProperty("programmingLanguage")));}
-//        if (e.getKeyCode() == NativeKeyEvent.Alt) {
-//            LOGGER.info("📸 Trigger screen capture");
-//            executor.submit(() ->
-//                    screenHotkeyExecutor.execute(
-//                            propertiesProvider.getPropertyMap().get("prompt.text"),
-//                            propertiesProvider.getProperty("programmingLanguage")));
-//        }
+        final String lang = propertiesProvider.getProperty("programmingLanguage");
+        final String promptText = propertiesProvider.getPropertyMap().get("prompt.text");
+        final String promptVoice = propertiesProvider.getPropertyMap().get("prompt.voice");
 
-        if (e.getKeyCode() == NativeKeyEvent.VC_F2) {
-            LOGGER.info("🎤 Trigger voice capture (last 30s)");
-            executor.submit(() ->
-                    voiceHotkeyExecutor.captureAndProcess(
-                            propertiesProvider.getPropertyMap().get("prompt.voice"),
-                            propertiesProvider.getProperty("programmingLanguage")));
+        final boolean requireAlt = isWindows() || isLinux();
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F1 && matches(e, requireAlt)) {
+            LOGGER.info("📸 Trigger screen capture");
+            executor.submit(() -> screenHotkeyExecutor.execute(promptText, lang));
         }
 
-        if (e.getKeyCode() == NativeKeyEvent.VC_F3) {
-            LOGGER.info("📸 Trigger screen capture");
+        if (e.getKeyCode() == NativeKeyEvent.VC_F2 && matches(e, requireAlt)) {
+            LOGGER.info("🎤 Trigger voice capture (last 30s)");
+            executor.submit(() -> voiceHotkeyExecutor.captureAndProcess(promptVoice, lang));
+        }
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F3 && matches(e, requireAlt)) {
+            LOGGER.info("📸 Commit screenshots");
             executor.submit(screenHotkeyExecutor::commitScreenShots);
         }
 
-        if (e.getKeyCode() == NativeKeyEvent.VC_F4) {
-            LOGGER.info("push screen folder");
-            executor.submit(() ->
-                    screenHotkeyExecutor.pushScreenShots(
-                            propertiesProvider.getPropertyMap().get("prompt.text"),
-                            propertiesProvider.getProperty("programmingLanguage")));
+        if (e.getKeyCode() == NativeKeyEvent.VC_F4 && matches(e, requireAlt)) {
+            LOGGER.info("⬆️  Push screen folder");
+            executor.submit(() -> screenHotkeyExecutor.pushScreenShots(promptText, lang));
         }
-
     }
+
+    private boolean matches(NativeKeyEvent e, boolean requireAlt) {
+        return !requireAlt || isAltDown(e);
+    }
+
+    private boolean isAltDown(NativeKeyEvent e) {
+        return (e.getModifiers() & NativeInputEvent.ALT_MASK) != 0;
+    }
+
+    private boolean isWindows() {
+        String os = System.getProperty("os.name");
+        return os != null && os.toLowerCase().contains("win");
+    }
+    private boolean isMac() {
+        String os = System.getProperty("os.name");
+        return os != null && os.toLowerCase().contains("mac");
+    }
+    private boolean isLinux() {
+        String os = System.getProperty("os.name");
+        return os != null && (os.toLowerCase().contains("nux") || os.toLowerCase().contains("nix"));
+    }
+
 }
