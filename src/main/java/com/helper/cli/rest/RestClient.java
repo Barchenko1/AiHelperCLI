@@ -39,6 +39,7 @@ public class RestClient implements IRestClient {
         if (code != null && !code.isEmpty()) {
             b.header("X-Auth-Code", code);
         }
+        addProviderHeader(b);
         try {
             return CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
@@ -107,10 +108,18 @@ public class RestClient implements IRestClient {
         if (code != null && !code.isEmpty()) {
             b.header("X-Auth-Code", code);
         }
+        addProviderHeader(b);
 
         if (headers != null) headers.forEach(b::header);
 
         return CLIENT.send(b.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
+    private static void addProviderHeader(HttpRequest.Builder b) {
+        String provider = System.getenv("AI_PROVIDER");
+        if (provider != null && !provider.isBlank()) {
+            b.header("X-AI-Provider", provider.trim());
+        }
     }
 
     private byte[] buildMultipartBody(String boundary,
