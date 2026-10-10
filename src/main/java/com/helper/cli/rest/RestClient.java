@@ -1,6 +1,7 @@
 package com.helper.cli.rest;
 
 import com.google.gson.Gson;
+import com.helper.cli.propertie.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,12 @@ public class RestClient implements IRestClient {
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Gson GSON = new Gson();
+    private static final String AI_PROVIDER = resolveProvider();
+
+    private static String resolveProvider() {
+        String value = new PropertiesProvider().getProperty("aiProvider");
+        return "openai".equalsIgnoreCase(value == null ? "" : value.trim()) ? "openai" : "claude";
+    }
 
     public HttpResponse<String> postJson(String url, Object payload, String prompt, Map<String, String> headers) {
         String json = GSON.toJson(payload);
@@ -116,10 +123,7 @@ public class RestClient implements IRestClient {
     }
 
     private static void addProviderHeader(HttpRequest.Builder b) {
-        String provider = System.getenv("AI_PROVIDER");
-        if (provider != null && !provider.isBlank()) {
-            b.header("X-AI-Provider", provider.trim());
-        }
+        b.header("X-AI-Provider", AI_PROVIDER);
     }
 
     private byte[] buildMultipartBody(String boundary,
