@@ -2,6 +2,7 @@ package com.helper.cli;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.helper.cli.event.GlobalEventListener;
+import com.helper.cli.heartbeat.Heartbeat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +14,7 @@ public class Main {
         try {
             GlobalScreen.registerNativeHook();
             GlobalScreen.addNativeKeyListener(new GlobalEventListener());
+            new Heartbeat().start();
             LOGGER.info("Listening for global fn + F1 key...");
         } catch (Exception e) {
             LOGGER.error("Failed to register global hook.", e);
