@@ -4,11 +4,6 @@ import com.helper.cli.propertie.PropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,21 +17,15 @@ public class Heartbeat {
     private static final Logger LOGGER = LoggerFactory.getLogger(Heartbeat.class);
     private static final int INTERVAL_SECONDS = 5;
 
-    private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
-    private final String pingUrl;
-    private final String offlineUrl;
-    private final String code;
+    private final PresenceClient presence;
     private Boolean lastOk;
 
     public Heartbeat() {
-        PropertiesProvider properties = new PropertiesProvider();
-        this.pingUrl = properties.apiUrl("/ping");
-        this.offlineUrl = properties.apiUrl("/ping/offline");
-        this.code = System.getenv("VERIFICATION_CODE");
+        this.presence = new PresenceClient(new PropertiesProvider());
     }
 
     public void start() {
-        if (code == null || code.isBlank()) {
+        if (!presence.hasCode()) {
             LOGGER.warn("VERIFICATION_CODE is not set - the UI will show the CLI as not connected.");
             return;
         }
@@ -50,26 +39,13 @@ public class Heartbeat {
     }
 
     private void goOffline() {
-        try {
-            send(offlineUrl, Duration.ofSeconds(2));
-        } catch (Exception ignored) {
-            // exiting anyway; the server marks the CLI offline after a few missed heartbeats
-        }
-    }
-
-    private int send(String url, Duration timeout) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                .timeout(timeout)
-                .header("X-Auth-Code", code)
-                .header("X-Client", "cli")
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .build();
-        return client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+        // exiting anyway; the server marks the CLI offline after a few missed heartbeats
+        presence.offline(IPresenceClient.CLI);
     }
 
     private void ping() {
         try {
-            int status = send(pingUrl, Duration.ofSeconds(10));
+            int status = presence.pingStatus(IPresenceClient.CLI);
             report(status >= 200 && status < 300, "server answered HTTP " + status
                     + (status == 401 ? " - the code is wrong or the session expired, log in on the UI and restart with the new code" : ""));
         } catch (InterruptedException e) {

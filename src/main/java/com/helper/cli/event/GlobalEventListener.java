@@ -3,8 +3,10 @@ package com.helper.cli.event;
 import com.github.kwhat.jnativehook.NativeInputEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import com.helper.cli.executor.sceen.AutoScreen;
 import com.helper.cli.executor.sceen.ScreenHotkeyExecutor;
 import com.helper.cli.executor.voice.VoiceHotkeyExecutor;
+import com.helper.cli.heartbeat.PresenceClient;
 import com.helper.cli.propertie.IPropertiesProvider;
 import com.helper.cli.propertie.PropertiesProvider;
 import org.slf4j.Logger;
@@ -19,6 +21,7 @@ public class GlobalEventListener implements NativeKeyListener {
     private final IPropertiesProvider propertiesProvider;
     private final ScreenHotkeyExecutor screenHotkeyExecutor;
     private final VoiceHotkeyExecutor voiceHotkeyExecutor;
+    private final AutoScreen autoScreen;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public GlobalEventListener() {
@@ -26,6 +29,18 @@ public class GlobalEventListener implements NativeKeyListener {
         this.screenHotkeyExecutor = new ScreenHotkeyExecutor(propertiesProvider);
         this.voiceHotkeyExecutor = new VoiceHotkeyExecutor(propertiesProvider);
         this.voiceHotkeyExecutor.startBackgroundCapture();
+        this.autoScreen = new AutoScreen(screenHotkeyExecutor, new PresenceClient(propertiesProvider), autoScreenIntervalSeconds());
+        Runtime.getRuntime().addShutdownHook(new Thread(autoScreen::stop, "auto-screen-offline"));
+    }
+
+    private long autoScreenIntervalSeconds() {
+        String value = propertiesProvider.getProperty("autoScreenIntervalSeconds");
+        try {
+            return value == null || value.isBlank() ? 20 : Math.max(1, Long.parseLong(value.trim()));
+        } catch (NumberFormatException e) {
+            LOGGER.warn("autoScreenIntervalSeconds='{}' is not a number - using 20", value);
+            return 20;
+        }
     }
 
     @Override
@@ -54,6 +69,11 @@ public class GlobalEventListener implements NativeKeyListener {
         if (e.getKeyCode() == NativeKeyEvent.VC_F4 && matches(e, requireAlt)) {
             LOGGER.info("⬆️  Push screen folder");
             executor.submit(() -> screenHotkeyExecutor.pushScreenShots(promptText, lang));
+        }
+
+        if (e.getKeyCode() == NativeKeyEvent.VC_F6 && matches(e, requireAlt)) {
+            LOGGER.info("🔁 Toggle auto screen");
+            autoScreen.toggle(promptText, lang);
         }
     }
 

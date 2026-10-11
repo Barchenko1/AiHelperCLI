@@ -46,6 +46,11 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
     }
 
     @Override
+    public boolean captureAndSend(String prompt, String programmingLanguage) {
+        return makeScreenAndPush(prompt, programmingLanguage);
+    }
+
+    @Override
     public void commitScreenShots() {
         Path commitFolderPath = getCommitFolderPath();
         makeScreen(commitFolderPath);
@@ -83,7 +88,7 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
 
     }
 
-    private void makeScreenAndPush(String prompt, String programmingLanguage) {
+    private boolean makeScreenAndPush(String prompt, String programmingLanguage) {
         try {
             long t0 = System.currentTimeMillis();
             BufferedImage shot = captureScreen();
@@ -94,6 +99,7 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
             File latestPng = getLatestPng(new File(propertiesProvider.getProperty("screenFolder")));
             HttpResponse<String> resp = uploadScreens(List.of(latestPng), withLanguage(prompt, programmingLanguage));
             logUploadResult(resp);
+            return resp.statusCode() == 200;
 
         } catch (Exception e) {
             throw new RuntimeException(e);
