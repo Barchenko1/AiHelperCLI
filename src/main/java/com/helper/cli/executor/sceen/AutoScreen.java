@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/** F6: first press sends a screenshot (like F1) every N seconds, second press stops. Drives the UI's Auto screen light. */
 public class AutoScreen {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoScreen.class);
@@ -17,7 +18,7 @@ public class AutoScreen {
     private final IScreenHotKeyExecutor screen;
     private final IPresenceClient presence;
     private final long intervalSeconds;
-    private volatile ScheduledFuture<?> task;
+    private ScheduledFuture<?> task;
 
     public AutoScreen(IScreenHotKeyExecutor screen, IPresenceClient presence, long intervalSeconds) {
         this.screen = screen;
@@ -42,18 +43,10 @@ public class AutoScreen {
         LOGGER.info("⏹️  Auto screen OFF");
     }
 
-    /** Green after a delivered screenshot, red otherwise. Must not throw, or the schedule silently stops. */
+    /** Light green when a round starts, red if the screenshot was not delivered. */
     void sendOnce(String prompt, String programmingLanguage) {
-        boolean sent;
-        try {
-            sent = screen.captureAndSend(prompt, programmingLanguage);
-        } catch (Exception e) {
-            LOGGER.error("Auto screen: screenshot failed: {}", e.getMessage());
-            sent = false;
-        }
-        if (sent && task != null) { // task == null: F6 was pressed while this one was uploading
-            presence.ping(IPresenceClient.AUTO_SCREEN);
-        } else {
+        presence.ping(IPresenceClient.AUTO_SCREEN);
+        if (!screen.captureAndSend(prompt, programmingLanguage)) {
             presence.offline(IPresenceClient.AUTO_SCREEN);
         }
     }

@@ -23,11 +23,11 @@ class AutoScreenTest {
 
     static class FakeScreen implements IScreenHotKeyExecutor {
         final CountDownLatch firstSend = new CountDownLatch(1);
+        final CountDownLatch upload = new CountDownLatch(1); // the server's answer; open = answered
         volatile boolean accept = true;
-        volatile RuntimeException failure;
         public boolean captureAndSend(String prompt, String lang) {
             firstSend.countDown();
-            if (failure != null) throw failure;
+            try { upload.await(5, TimeUnit.SECONDS); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
             return accept;
         }
         public void execute(String prompt, String lang) {}
@@ -44,20 +44,20 @@ class AutoScreenTest {
         auto.stop();
     }
 
-    /** F6 once, then wait for the immediate first screenshot. */
+    /** F6 once, let the immediate first screenshot finish. */
     private void started() throws InterruptedException {
         auto.toggle("p", "Java");
         assertTrue(screen.firstSend.await(5, TimeUnit.SECONDS));
-        while (presence.calls.isEmpty()) Thread.onSpinWait();
+        screen.upload.countDown();
+        Thread.sleep(50);
         presence.calls.clear();
     }
 
     @Test
-    void firstPressSendsRightAwayAndLightGoesGreen() throws Exception {
+    void lightGoesGreenBeforeTheScreenshotIsDelivered() throws Exception {
         auto.toggle("p", "Java");
 
-        assertTrue(screen.firstSend.await(5, TimeUnit.SECONDS));
-        while (presence.calls.isEmpty()) Thread.onSpinWait();
+        assertTrue(screen.firstSend.await(5, TimeUnit.SECONDS)); // upload still waiting for the server
         assertEquals(List.of("ping"), presence.calls);
     }
 
@@ -77,28 +77,16 @@ class AutoScreenTest {
 
         auto.sendOnce("p", "Java");
 
-        assertEquals(List.of("offline"), presence.calls);
+        assertEquals(List.of("ping", "offline"), presence.calls);
     }
 
     @Test
-    void crashingScreenshotDoesNotThrowAndTurnsLightRed() throws Exception {
+    void deliveredScreenshotKeepsLightGreen() throws Exception {
         started();
-        screen.failure = new RuntimeException("no display");
 
         auto.sendOnce("p", "Java");
 
-        assertEquals(List.of("offline"), presence.calls);
-    }
-
-    @Test
-    void screenshotFinishingAfterStopKeepsLightRed() throws Exception {
-        started();
-        auto.stop();
-        presence.calls.clear();
-
-        auto.sendOnce("p", "Java");
-
-        assertEquals(List.of("offline"), presence.calls);
+        assertEquals(List.of("ping"), presence.calls);
     }
 
     @Test

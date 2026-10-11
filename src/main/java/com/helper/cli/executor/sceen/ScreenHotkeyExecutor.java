@@ -102,7 +102,8 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
             return resp.statusCode() == 200;
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Screenshot failed: {}", e.getMessage(), e);
+            return false;
         }
     }
 
