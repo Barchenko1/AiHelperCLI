@@ -52,7 +52,7 @@ public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
         String finalPrompt = prompt + " " + LANGUAGE_TEXT.formatted(programmingLanguage);
         try {
             HttpResponse<String> response = restClient.postMultipartWav(
-                    propertiesProvider.getProperty("aiHelperServerUrl") + "/api/v1/voice",
+                    propertiesProvider.apiUrl("/voice"),
                     Files.readAllBytes(file.toPath()),
                     finalPrompt,
                     headers);

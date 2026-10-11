@@ -108,7 +108,7 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
 
     private HttpResponse<String> uploadScreens(List<File> files, String finalPrompt) {
         Map<String, String> headers = getHeaders();
-        String url = propertiesProvider.getProperty("aiHelperServerUrl") + "/api/v1/screens";
+        String url = propertiesProvider.apiUrl("/screens");
         return restClient.postMultipartPngs(url, files, finalPrompt, headers);
     }
 

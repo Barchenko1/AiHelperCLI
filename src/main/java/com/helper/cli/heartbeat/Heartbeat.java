@@ -29,9 +29,9 @@ public class Heartbeat {
     private Boolean lastOk;
 
     public Heartbeat() {
-        String baseUrl = new PropertiesProvider().getProperty("aiHelperServerUrl");
-        this.pingUrl = baseUrl + "/api/v1/ping";
-        this.offlineUrl = baseUrl + "/api/v1/ping/offline";
+        PropertiesProvider properties = new PropertiesProvider();
+        this.pingUrl = properties.apiUrl("/ping");
+        this.offlineUrl = properties.apiUrl("/ping/offline");
         this.code = System.getenv("VERIFICATION_CODE");
     }
 
