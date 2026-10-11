@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.helper.cli.util.Constant.LANGUAGE_TEXT;
+import static com.helper.cli.util.Constant.withLanguage;
 
 public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
 
@@ -49,7 +49,7 @@ public class VoiceHotkeyExecutor implements IVoiceHotKeyExecutor {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "audio/wav");
 
-        String finalPrompt = prompt + " " + LANGUAGE_TEXT.formatted(programmingLanguage);
+        String finalPrompt = withLanguage(prompt, programmingLanguage);
         try {
             HttpResponse<String> response = restClient.postMultipartWav(
                     propertiesProvider.apiUrl("/voice"),

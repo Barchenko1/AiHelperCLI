@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.helper.cli.util.Constant.LANGUAGE_TEXT;
+import static com.helper.cli.util.Constant.withLanguage;
 
 public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenHotkeyExecutor.class);
@@ -78,7 +78,7 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
                 .sorted(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
-        HttpResponse<String> resp = uploadScreens(files, buildFinalPrompt(prompt, programmingLanguage));
+        HttpResponse<String> resp = uploadScreens(files, withLanguage(prompt, programmingLanguage));
         logUploadResult(resp);
 
     }
@@ -92,7 +92,7 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
             saveScreenshotToLocal(rootFolderPath, "screenshot", resized);
             LOGGER.info("screenshot captured+saved in {} ms", (System.currentTimeMillis() - t0));
             File latestPng = getLatestPng(new File(propertiesProvider.getProperty("screenFolder")));
-            HttpResponse<String> resp = uploadScreens(List.of(latestPng), buildFinalPrompt(prompt, programmingLanguage));
+            HttpResponse<String> resp = uploadScreens(List.of(latestPng), withLanguage(prompt, programmingLanguage));
             logUploadResult(resp);
 
         } catch (Exception e) {
@@ -101,10 +101,6 @@ public class ScreenHotkeyExecutor implements IScreenHotKeyExecutor {
     }
 
 
-    private String buildFinalPrompt(String prompt, String programmingLanguage) {
-        String base = prompt == null ? "" : prompt.trim();
-        return (base + " " + LANGUAGE_TEXT.formatted(programmingLanguage)).trim();
-    }
 
     private HttpResponse<String> uploadScreens(List<File> files, String finalPrompt) {
         Map<String, String> headers = getHeaders();
